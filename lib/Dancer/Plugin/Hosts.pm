@@ -75,6 +75,11 @@ sub hostTrigger {
     }
 }
 
+=head1 NOTES BEFORE
+
+After this module has been written i found other way to make virtual hosts without this module.
+Please to see L</"OTHER WAY"> section below
+
 =head1 SYNOPSIS
 
 This plugin doesn't have syntax commands. It has only configurable options in
@@ -146,6 +151,72 @@ values (as L<Dancer> does itself):
 I<This option is optional>. If you will define it then the module after it will be
 loaded if need through L<Dancer::load_app> command and all settings for this host will be
 set for this App settings. Otherwise application will be 'main' (Dancer no App default)
+
+=head1 OTHER WAY
+
+=head2 Example without using this module
+
+Here the example: one module (App) for some sites.
+
+I<Your lib/YourApp.pm should be as:>
+
+    package YourApp;
+
+    use strict;
+    use warnings;
+
+    use Dancer ':syntax';
+
+    setting apphandler => 'PSGI';
+
+    Dancer::App->set_running_app('YourApp');
+
+    # This and other routes ...
+    get '/' => sub {
+	# Static and template files will be from different directories are
+	# based by host http header
+	template 'index';
+    };
+
+    1;
+
+I<Your bin/app.psgi should be as:>
+
+    #!/usr/bin/perl
+    use strict;
+    use warnings;
+
+    use Dancer;
+
+    # The next line can miss but need for quickly loading in L<Starman> server
+    use YourApp;
+
+    use Plack::Builder;
+
+    # Please notice that here no need ports in url
+    # So for http://app1.foo.com:3000/ will work
+    # http://app1.foo.com/
+    my $hosts = {
+      'http://app1.foo.com/' => '/appdir/1',
+      'http://app2.foo.com/' => '/appdir/2'
+    };
+
+    builder {
+	my $last;
+	foreach my $host (keys %$hosts) {
+	    $last = mount $host => sub {
+		my $env = shift;
+		local $ENV{DANCER_APPDIR} = $hosts->{$host};
+		load_app "YourApp";
+		Dancer::App->set_running_app('YourApp');
+		setting appdir => $hosts->{$host};
+		Dancer::Config->load;
+		my $request = Dancer::Request->new( env => $env );
+		Dancer->dance($request);
+	    };
+	 }
+	$last;
+    };
 
 =head1 AUTHOR
 
