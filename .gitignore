@@ -1,0 +1,9 @@
+/blib/
+/*.komodoproject
+*.tar.gz
+*.bak
+/Makefile*
+/pm_to_blib
+/MYMETA*
+!/Makefile.PL
+
