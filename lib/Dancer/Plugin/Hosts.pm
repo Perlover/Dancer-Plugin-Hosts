@@ -227,6 +227,12 @@ This module has been written by Perlover <perlover@perlover.com>
 This module is free software and is published under the same
 terms as Perl itself.
 
+=head1 SOURCE CODE
+
+The source code for this module is hosted on GitHub
+L<http://github.com/Perlover/Dancer-Plugin-Hosts>.  Feel free to fork the repository and submit
+pull requests!
+
 =cut
 
 1;
